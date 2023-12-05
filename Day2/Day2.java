@@ -21,7 +21,7 @@ public class Day2 {
             while ((line = br.readLine()) != null) {
                 String[] idAndSamples = line.split(": ");
                 
-                long gameId = Integer.parseInt(idAndSamples[0].split(" ")[1]);
+                long gameId = Long.parseLong(idAndSamples[0].split(" ")[1]);
                 
                 String samples = idAndSamples[1];                       
                 String[] sample = samples.split(";");
