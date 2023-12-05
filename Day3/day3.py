@@ -1,4 +1,3 @@
-# Online Python - IDE, Editor, Compiler, Interpreter
 # Please note this code was written on my phone on some online IDE
 
 with open('input.txt') as file:
@@ -7,7 +6,7 @@ with open('input.txt') as file:
     inputArray = input.split('\n')
     stars = [[1] * len(inputArray[0]) for _ in range(len(inputArray))]
     starcounts = [[0] * len(inputArray[0]) for _ in range(len(inputArray))]
-    answer = 0
+    answerPart1 = 0
     for i in range(0, len(inputArray)):
         line = inputArray[i]
         startIndex = -1
@@ -60,15 +59,16 @@ with open('input.txt') as file:
                                     stars[i + 1][index] *= int(line[startIndex:endIndex + 1])
                                     starcounts[i + 1][index] += 1
                     if (partNumber):
-                        answer += int(line[startIndex:endIndex + 1])
+                        answerPart1 += int(line[startIndex:endIndex + 1])
                 inNumber = False
                 startIndex = -1
                 endIndex = -1
                 
-    print(answer)
-    gears = 0
+    answerPart2 = 0
     for k in range(0, len(starcounts)):
         for l in range(0, len(starcounts[k])):
             if (starcounts[k][l] == 2):
-                gears += stars[k][l]
-    print(gears)
+                answerPart2 += stars[k][l]
+                
+    print("Part1: ", answerPart1)
+    print("Part2: ", answerPart2)

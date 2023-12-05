@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package Day1;
 
 import java.io.BufferedReader;
@@ -19,12 +13,15 @@ public class Day1 {
     public static void main(String[] args) {
         File file = new File("res/day1/input.txt");
         
-        long answer = 0;
+        long answerPart1 = 0;
+        long answerPart2 = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
-            while ((line = br.readLine()) != null) {
-                // Comment out replaces for part 1 answer
+            while ((line = br.readLine()) != null) {               
+               char[] lineCharacters = line.toCharArray();           
+               answerPart1 += getFirstAndLastDigit(lineCharacters);
+               
                line = line.replace("one", "one1one");
                line = line.replace("two", "two2two");
                line = line.replace("three", "three3three");
@@ -34,28 +31,33 @@ public class Day1 {
                line = line.replace("seven", "seven7seven");
                line = line.replace("eight", "eight8eight");
                line = line.replace("nine", "nine9nine");
-               char[] lineCharacters = line.toCharArray();
-               boolean found = false;
-               int firstNum = -1;
-               int lastNum = -1;
-               for(char c : lineCharacters) {
-                   if(Character.isDigit(c)) {
-                       if(found) {
-                            lastNum = Character.getNumericValue(c);
-                       } else {
-                           firstNum = Character.getNumericValue(c) * 10;
-                           lastNum = Character.getNumericValue(c);
-                           found = true;
-                       }
-                   }
-               }
                
-               int sum = firstNum + lastNum;
-               answer += sum;
+               lineCharacters = line.toCharArray();           
+               answerPart2 += getFirstAndLastDigit(lineCharacters);
             }
         } catch(IOException e) {
             System.out.println(e.toString());
         }
-        System.out.println(answer);
+        System.out.println("Part 1: " + answerPart1);
+        System.out.println("Part 2: " + answerPart2);
+    }
+    
+    private static int getFirstAndLastDigit(char[] lineCharacters) {    
+        boolean found = false;
+        int firstNum = -1;
+        int lastNum = -1;
+        for(char c : lineCharacters) {
+            if(Character.isDigit(c)) {
+                if(found) {
+                    lastNum = Character.getNumericValue(c);
+                } else {
+                    firstNum = Character.getNumericValue(c) * 10;
+                    lastNum = Character.getNumericValue(c);
+                    found = true;
+                }
+            }
+        }
+               
+        return firstNum + lastNum;
     }
 }

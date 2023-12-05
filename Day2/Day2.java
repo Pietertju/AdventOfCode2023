@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package Day2;
 
 import java.io.BufferedReader;
@@ -19,39 +13,58 @@ public class Day2 {
     public static void main(String[] args) {
         File file = new File("res/day2/input.txt");
         
-        long answer = 0;
+        long answerPart1 = 0;
+        long answerPart2 = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String samples = line.split(": ")[1];
+                String[] idAndSamples = line.split(": ");
+                
+                long gameId = Integer.parseInt(idAndSamples[0].split(" ")[1]);
+                
+                String samples = idAndSamples[1];                       
                 String[] sample = samples.split(";");
+                
                 long minRed = 0;
                 long minBlue = 0;
                 long minGreen = 0;
+                
+                boolean possibleGame = true;
+                
                 for(String entry : sample) {
                     String[] balls = entry.split(",");
+                    
                     for(String ball : balls) {
-                        ball = ball.trim();
+                        ball = ball.trim();                    
                         String[] amountAndColor = ball.split(" ");
+                        
                         long amount = Long.parseLong(amountAndColor[0]);
                         String color = amountAndColor[1];
+                        
                         if(color.equals("red")) {
+                            if(amount > 12) possibleGame = false;
                             if(minRed < amount) minRed = amount;
                         } else if(color.equals("green")) {
+                            if(amount > 13) possibleGame = false;
                             if(minGreen < amount) minGreen = amount;
                         } else if(color.equals("blue")) {
+                            if(amount > 14) possibleGame = false;
                             if(minBlue < amount) minBlue = amount;
                         }
                     }
                 }
                 
+                if(possibleGame) answerPart1 += gameId;
+                
                 long power = minRed * minBlue * minGreen;
-                answer += power;
+                answerPart2 += power;
             }
         } catch(IOException e) {
             System.out.println(e.toString());
         }
-        System.out.println(answer);
+        
+        System.out.println("Part 1: " + answerPart1);
+        System.out.println("Part 2: " + answerPart2);
     }
 }

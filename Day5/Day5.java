@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package Day5;
 
 import java.io.BufferedReader;
@@ -11,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  *
@@ -32,7 +25,8 @@ public class Day5 {
             Mappings humiditytolocation = new Mappings();
             Mappings[] mappingsList = new Mappings[]{seedtosoil, soiltofertilizer, fertilizertowater, watertolight, lighttotemperature, temperaturetohumidity, humiditytolocation};
          
-            NumberRange[] seeds = new NumberRange[0];
+            NumberRange[] seedRanges = new NumberRange[0];
+            long[] seeds = new long[0];
             
             int currentMapping = -1; //0 means waiting for seedtosoil
             while ((line = br.readLine()) != null) {
@@ -41,12 +35,20 @@ public class Day5 {
                 }                      
                 if(line.startsWith("seeds:")) {
                     String[] seedsStringArray = line.split(":")[1].trim().split(" ");
-                    seeds = new NumberRange[seedsStringArray.length / 2];
+                    
+                    seedRanges = new NumberRange[seedsStringArray.length / 2];
+                    seeds = new long[seedsStringArray.length];
+                    
                     int seedIndex = 0;
                     for(int i = 0; i < seedsStringArray.length; i++) {
                         long seedStart = Long.parseLong(seedsStringArray[i]);
                         long numOfSeeds = Long.parseLong(seedsStringArray[i+1]);
-                        seeds[seedIndex] = new NumberRange(seedStart, seedStart + numOfSeeds -1);
+                        
+                        seeds[i] = seedStart;
+                        seeds[i+1] = numOfSeeds;
+                        
+                        seedRanges[seedIndex] = new NumberRange(seedStart, seedStart + numOfSeeds -1);                      
+                        
                         seedIndex++;
                         i++;
                     }
@@ -69,10 +71,25 @@ public class Day5 {
                 mappingsList[currentMapping].addMapping(mapping);
             }
             
-            long lowest = Long.MAX_VALUE;
+            //part 1
+            long answerPart1 = Long.MAX_VALUE;
+            
+            for (long seed : seeds) {
+                long location = seed;
+                for (Mappings mappingList : mappingsList) {
+                    location = mappingList.map(location);
+                }
+                
+                if(location < answerPart1) {
+                    answerPart1 = location;
+                }       
+            }
+            
+            //part 2
+            long answerPart2 = Long.MAX_VALUE;
             
             ArrayList<NumberRange> locationRanges = new ArrayList<>();
-            for (NumberRange seedRange : seeds) {
+            for (NumberRange seedRange : seedRanges) {
                 ArrayList<NumberRange> ranges = new ArrayList<>();
                 ranges.add(seedRange);
                 for (Mappings mappingList : mappingsList) {
@@ -82,11 +99,13 @@ public class Day5 {
             }
             
             for(NumberRange range : locationRanges) {
-                if(range.start < lowest) {
-                    lowest = range.start;
+                if(range.start < answerPart2) {
+                    answerPart2 = range.start;
                 }
             }
-            System.out.println(lowest);
+            
+            System.out.println("Part 1: " + answerPart1);
+            System.out.println("Part 2: " + answerPart2);
         } catch(IOException e) {
             System.out.println(e.toString());
         }
@@ -118,7 +137,7 @@ public class Day5 {
                 long nthNumber = number - source.start;
                 return destination.start + nthNumber;
             }
-            return number;
+            return -1;
         }
         
         public AccountedUnaccountedPair mapRange(NumberRange range, ArrayList<NumberRange> unaccounted) {
