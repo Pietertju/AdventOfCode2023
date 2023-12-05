@@ -24,6 +24,7 @@ public class Day1 {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
+                // Comment out replaces for part 1 answer
                line = line.replace("one", "one1one");
                line = line.replace("two", "two2two");
                line = line.replace("three", "three3three");
