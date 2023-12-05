@@ -1,4 +1,5 @@
 # Online Python - IDE, Editor, Compiler, Interpreter
+# Please note this code was written on my phone on some online IDE
 
 with open('input.txt') as file:
     input = file.read()
