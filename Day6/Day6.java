@@ -59,13 +59,7 @@ public class Day6 {
         long[] possibleTimes = new long[times.length];
         
         for(int i = 0; i < times.length; i++) {
-            long time = times[i];
-            for(long holdTime = 1; holdTime < time; holdTime++) {
-                long distance = holdTime * (time-holdTime);
-                if(distance > distances[i]) {
-                    possibleTimes[i]++;
-                }
-            }
+            possibleTimes[i] += getPossibilitiesABC(times[i], distances[i]);
         }
         
         for(long possibilities : possibleTimes) {
@@ -73,17 +67,32 @@ public class Day6 {
         }
         
         // part 2
-        for(long holdTime = 1; holdTime < raceTime; holdTime++) {
-            long distance = holdTime * (raceTime-holdTime);
-            if(distance > raceDistance) {
-                answerPart2++;
-            }
-        } 
+        answerPart2 = getPossibilitiesABC(raceTime, raceDistance);
+        
         long endTime = Benchmark.currentTime();
         long elapsed = Benchmark.elapsedTime(startTime, endTime);
      
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
+    }
+    
+    public static long getPossibilitiesABC(long raceTime, long raceDistance) {
+        long a = 1;
+        long b = raceTime;
+        long c = raceDistance + 1;
+        
+        long d = (b*b) - (4*a*c);
+        
+        double start = Math.abs((-b - Math.sqrt(d))/(2*a));
+        double end =  Math.abs((-b + Math.sqrt(d))/(2*a));
+        
+        long startHoldTime =  (long) Math.ceil(Math.min(start, end));
+        long endHoldTime =  (long) Math.floor(Math.max(start, end));
+        if(endHoldTime > raceTime-1) {
+            endHoldTime = raceTime - 1;
+        }
+        
+        return endHoldTime - startHoldTime + 1;
     }
 }
