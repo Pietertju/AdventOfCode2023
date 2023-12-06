@@ -1,4 +1,4 @@
-package Day6;
+package Day06;
 
 import Benchmarking.Benchmark;
 import java.io.BufferedReader;
