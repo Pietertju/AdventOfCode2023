@@ -1,5 +1,6 @@
 package Day5;
 
+import Benchmarking.Benchmark;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
  */
 public class Day5 {
     public static void main(String[] args) {
+        long startTime = Benchmark.currentTime();
         File file = new File("res/day5/input.txt");
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
@@ -104,8 +106,12 @@ public class Day5 {
                 }
             }
             
+            long endTime = Benchmark.currentTime();
+            long elapsed = Benchmark.elapsedTime(startTime, endTime);
+
             System.out.println("Part 1: " + answerPart1);
             System.out.println("Part 2: " + answerPart2);
+            System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
         } catch(IOException e) {
             System.out.println(e.toString());
         }

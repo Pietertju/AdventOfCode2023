@@ -1,6 +1,9 @@
 # Please note this code was written on my phone on some online IDE
+import time
 
 with open('input.txt') as file:
+    start_time = time.time()
+
     input = file.read()
 
     inputArray = input.split('\n')
@@ -69,6 +72,9 @@ with open('input.txt') as file:
         for l in range(0, len(starcounts[k])):
             if (starcounts[k][l] == 2):
                 answerPart2 += stars[k][l]
-                
+
+    end_time = time.time()
+    elapsed_time = (end_time - start_time)*1000       
     print("Part1: ", answerPart1)
     print("Part2: ", answerPart2)
+    print("Part 1 and 2 took: ", elapsed_time, " ms combined") 
