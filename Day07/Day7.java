@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -18,7 +17,7 @@ import static java.util.stream.Collectors.groupingBy;
  */
 public class Day7 {
     
-    static boolean joker = false;
+    private static boolean joker = false;
     
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
@@ -74,16 +73,16 @@ public class Day7 {
     }
     
     
-    public static class Hand implements Comparable<Hand> {
+    private static class Hand implements Comparable<Hand> {
         String hand;
         long bet;
 
-        public Hand(String hand, long bet) {
+        private Hand(String hand, long bet) {
             this.hand = hand;
             this.bet = bet;
         }
         
-        public int getRank(boolean jokers) {
+        private int getRank(boolean jokers) {
             String copyOfHand = this.hand;
             
             if(jokers) {
@@ -141,7 +140,7 @@ public class Day7 {
             return rank;
         }
         
-        public int getIndex(int index, boolean joker) {
+        private int getIndex(int index, boolean joker) {
             char c = this.hand.charAt(index);
             if(Character.isDigit(c)) {
                 return Character.getNumericValue(c);
