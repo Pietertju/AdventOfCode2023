@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.counting;
@@ -16,6 +17,9 @@ import static java.util.stream.Collectors.groupingBy;
  * @author Pieter
  */
 public class Day7 {
+    
+    static boolean joker = false;
+    
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
         File file = new File("res/day7/input.txt");
@@ -39,23 +43,14 @@ public class Day7 {
         }
         
         // part 1
-        Comparator<Hand> handsComparator = Comparator.comparing(hand -> hand.getRank(false));
-        for(int i = 0; i < 5; i++) {
-            final int index = i;
-            handsComparator = handsComparator.thenComparing(Comparator.comparing(hand -> hand.getIndex(index, false)));
-        }              
-        hands.sort(handsComparator);
-        
+        Collections.sort(hands);      
         answerPart1 = countHands(hands);
         
-        // part 2
-        handsComparator = Comparator.comparing(hand -> hand.getRank(true));
-        for(int i = 0; i < 5; i++) {
-            final int index = i;
-            handsComparator = handsComparator.thenComparing(Comparator.comparing(hand -> hand.getIndex(index, true)));
-        }              
-        hands.sort(handsComparator);
         
+        // part 2
+        joker = true;
+        
+        Collections.sort(hands);
         answerPart2 = countHands(hands);
         
         
@@ -78,7 +73,8 @@ public class Day7 {
         return count;
     }
     
-    public static class Hand {
+    
+    public static class Hand implements Comparable<Hand> {
         String hand;
         long bet;
 
@@ -161,6 +157,22 @@ public class Day7 {
             }
             
             return -1;
+        }
+
+        @Override
+        public int compareTo(Hand o) {
+            int rank = this.getRank(joker) - o.getRank(joker);
+            if(rank == 0) {
+                int highestCard = 0;
+                int index = 0;
+                while(highestCard == 0) {
+                    highestCard = this.getIndex(index, joker) - o.getIndex(index, joker);
+                    index++;
+                }
+                return highestCard;
+            } else {
+                return rank;
+            }
         }
     }
 }
