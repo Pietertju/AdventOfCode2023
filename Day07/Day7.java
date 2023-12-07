@@ -22,8 +22,7 @@ public class Day7 {
         
         long answerPart1 = 0;
         long answerPart2 = 0;
-        
-        
+                
         ArrayList<Hand> hands = new ArrayList<>();
         
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -34,45 +33,31 @@ public class Day7 {
                 String hand = inputSplit[0];
                 long bet = Long.parseLong(inputSplit[1]);
                 hands.add(new Hand(hand, bet));
-            }
-            
-            
+            }                
         } catch(IOException e) {
             System.out.println(e.toString());
         }
         
         // part 1
-        hands.sort(Comparator.comparing((Hand hand) -> hand.getRank(false))
-                .thenComparing(hand -> hand.getIndex(0, false))
-                .thenComparing(hand -> hand.getIndex(1, false))
-                .thenComparing(hand -> hand.getIndex(2, false))
-                .thenComparing(hand -> hand.getIndex(3, false))
-                .thenComparing(hand -> hand.getIndex(4, false))
-        );
+        Comparator<Hand> handsComparator = Comparator.comparing(hand -> hand.getRank(false));
+        for(int i = 0; i < 5; i++) {
+            final int index = i;
+            handsComparator = handsComparator.thenComparing(Comparator.comparing(hand -> hand.getIndex(index, false)));
+        }              
+        hands.sort(handsComparator);
         
-        
-        int multiplier = 0;
-        for(Hand hand : hands) {
-            multiplier++;
-            answerPart1 += multiplier * hand.bet;
-            //System.out.println(hand.hand + "  " + hand.getRank(true) + "  -  " + multiplier);
-        }
+        answerPart1 = countHands(hands);
         
         // part 2
-        hands.sort(Comparator.comparing((Hand hand) -> hand.getRank(true))
-                .thenComparing(hand -> hand.getIndex(0, true))
-                .thenComparing(hand -> hand.getIndex(1, true))
-                .thenComparing(hand -> hand.getIndex(2, true))
-                .thenComparing(hand -> hand.getIndex(3, true))
-                .thenComparing(hand -> hand.getIndex(4, true))
-        );
+        handsComparator = Comparator.comparing(hand -> hand.getRank(true));
+        for(int i = 0; i < 5; i++) {
+            final int index = i;
+            handsComparator = handsComparator.thenComparing(Comparator.comparing(hand -> hand.getIndex(index, true)));
+        }              
+        hands.sort(handsComparator);
         
+        answerPart2 = countHands(hands);
         
-        multiplier = 0;
-        for(Hand hand : hands) {
-            multiplier++;
-            answerPart2 += multiplier * hand.bet;
-        }
         
         long endTime = Benchmark.currentTime();
         long elapsed = Benchmark.elapsedTime(startTime, endTime);
@@ -82,6 +67,16 @@ public class Day7 {
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
     }
     
+    public static long countHands(ArrayList<Hand> hands) {
+        long multiplier = 0;
+        long count = 0;
+        for(Hand hand : hands) {
+            multiplier++;
+            count += multiplier * hand.bet;
+        }
+        
+        return count;
+    }
     
     public static class Hand {
         String hand;
@@ -94,53 +89,55 @@ public class Day7 {
         
         public int getRank(boolean jokers) {
             String copyOfHand = this.hand;
+            
             if(jokers) {
                 this.hand = this.hand.replace("J","");
-                int withoutLength = this.hand.length();
-                if(withoutLength == 0) {
+                if(this.hand.length() == 0) {
                     this.hand = copyOfHand;
                     return 7;
                 }
             }
             
-            long c = this.hand.chars().mapToObj(x -> (char) x)
+            long mostCommonCount = this.hand.chars().mapToObj(x -> (char) x)
                             .collect(groupingBy(x -> x, counting()))
                             .entrySet()
                             .stream()
                             .max(comparingByValue()).get().getValue();
-            c += (5-this.hand.length());
-
-            char character = this.hand.chars().mapToObj(x -> (char) x)
+            
+            // Add jokers to most common count
+            mostCommonCount += (5-this.hand.length());
+            
+            char mostCommonCharacter = this.hand.chars().mapToObj(x -> (char) x)
                             .collect(groupingBy(x -> x, counting()))
                             .entrySet()
                             .stream()
                             .max(comparingByValue()).get().getKey();
-
-            String hand2 = this.hand.replace(Character.toString(character), "");
             
             int rank = -1;
             
-            if(c == 5) {
+            if(mostCommonCount == 5) {
                 rank = 7;
-            } else if(c==4) {
+            } else if(mostCommonCount == 4) {
                 rank = 6;
-            } else if (c==3) {
-                long d = this.hand.chars().mapToObj(x -> (char) x)
+            } else if (mostCommonCount == 3) {
+                long leastCommon = this.hand.chars().mapToObj(x -> (char) x)
                             .collect(groupingBy(x -> x, counting()))
                             .entrySet()
                             .stream()
                             .min(comparingByValue()).get().getValue();
-                if(d == 2) rank = 5;
+                if(leastCommon == 2) rank = 5;
                 else rank = 4;
-            } else if (c == 2) {
-                long d = hand2.chars().mapToObj(x -> (char) x)
+            } else if (mostCommonCount == 2) {
+                String handWithoutMostCommon = this.hand.replace(Character.toString(mostCommonCharacter), "");
+                long secondMostCommon = handWithoutMostCommon.chars().mapToObj(x -> (char) x)
                             .collect(groupingBy(x -> x, counting()))
                             .entrySet()
                             .stream()
                             .max(comparingByValue()).get().getValue();
-                if(d == 2) rank = 3;
+                
+                if(secondMostCommon == 2) rank = 3;
                 else rank = 2;
-            } else if (c == 1) {
+            } else if (mostCommonCount == 1) {
                 rank = 1;
             }
             
