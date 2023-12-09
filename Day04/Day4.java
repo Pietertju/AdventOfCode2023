@@ -14,7 +14,7 @@ import java.util.Arrays;
 public class Day4 {
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
-        File file = new File("res/day4/input.txt");
+        File file = new File("res/day04/input.txt");
         
         long answerPart1 = 0;
         long answerPart2 = 0;

@@ -21,7 +21,7 @@ public class Day7 {
     
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
-        File file = new File("res/day7/input.txt");
+        File file = new File("res/day07/input.txt");
         
         long answerPart1 = 0;
         long answerPart2 = 0;

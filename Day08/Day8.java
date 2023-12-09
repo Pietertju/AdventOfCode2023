@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 /**
  *
  * @author Pieter
@@ -16,7 +15,7 @@ import java.util.HashMap;
 public class Day8 {
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
-        File file = new File("res/day8/input.txt");
+        File file = new File("res/day08/input.txt");
         
         long answerPart1 = 0;
         long answerPart2 = 0;

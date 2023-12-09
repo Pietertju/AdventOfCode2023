@@ -13,7 +13,7 @@ import java.io.IOException;
 public class Day6 {
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
-        File file = new File("res/day6/input.txt");
+        File file = new File("res/day06/input.txt");
         
         long answerPart1 = 1;
         long answerPart2 = 0;
