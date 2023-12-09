@@ -28,9 +28,9 @@ public class Day9 {
                     values[i] = Long.parseLong(numberStrings[i]);
                 }
                 
-                answerPart1 += predict(values, false);
+                answerPart1 += predict(values);
                 
-                long part2Prediction = predict(values, true);
+                long part2Prediction = predict(reverse(values));
                 answerPart2 += part2Prediction;
             }
 
@@ -45,7 +45,7 @@ public class Day9 {
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
     }
     
-    private static long predict(long[] numbers, boolean part2) {     
+    private static long predict(long[] numbers) {     
         boolean allZeroes = false;
         
         long[] relevantDifferences = new long[numbers.length-2];
@@ -57,17 +57,25 @@ public class Day9 {
             Differences diff = computeDifferences(differences);
             differences = diff.differences;
             allZeroes = diff.allZeroes;
-            relevantDifferences[relevantIndex] = (part2) ? differences[0] : differences[differences.length-1];     
+            relevantDifferences[relevantIndex] = differences[differences.length-1];     
             relevantIndex++;
         }
         
         long prediction = 0;
         for(int i = relevantIndex-1; i >= 0; i--) {
-            prediction = (part2) ? relevantDifferences[i] - prediction : prediction + relevantDifferences[i];
+            prediction += relevantDifferences[i];
         }
         
-        if(part2) return numbers[0] - prediction;
         return prediction + numbers[numbers.length - 1];
+    }
+    
+    private static long[] reverse(long[] array) {
+        for(int i = 0; i < array.length / 2; i++) {
+            long temp = array[i];
+            array[i] = array[array.length - i - 1];
+            array[array.length - i - 1] = temp;
+        }
+        return array;
     }
     
     private static Differences computeDifferences(long[] numbers) {
