@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 /**
@@ -25,33 +26,28 @@ public class Day8 {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             String input = "";
-             
-            int index = 0;
-            
-            ArrayList<Route> routes = new ArrayList<>();
-            ArrayList<Integer> startingRoutes = new ArrayList<>();
-            
-            int numberOfStartingNodes = 0;
-            
+                         
+            HashMap<String, Route> routing = new HashMap<>();
+            ArrayList<String> startingRoutes = new ArrayList<>();
+                        
             while ((line = br.readLine()) != null) {
                 if(lines == 0) {
                     input = line;
                 } else {
                     if(!line.isBlank()){
-                        if(line.startsWith("AAA")) {
-                            index = lines - 2;
-                        }
                         String[] split = line.split("\\=");
+                        
                         String source = split[0].trim();
+                        
                         String destination = split[1].trim();
                         String destLeft = destination.split(",")[0].trim().replace("(", "");
                         String destRight = destination.split(",")[1].trim().replace(")", "");
+                        
                         Route route = new Route(source, destLeft, destRight);
-                        routes.add(route);
+                        routing.put(source, route);
                         
                         if(route.source.endsWith("A")) {
-                            startingRoutes.add(lines - 2);
-                            numberOfStartingNodes++;
+                            startingRoutes.add(route.source);
                         }
                     }
                 }
@@ -59,13 +55,13 @@ public class Day8 {
             }
             
             // Part 1           
-            answerPart1 = getCycleLength(input, routes, index, "ZZZ");
+            answerPart1 = getCycleLength(input, routing, "AAA", "ZZZ");
             
-            long[] cycleLengths = new long[numberOfStartingNodes];
+            long[] cycleLengths = new long[startingRoutes.size()];
             
             int cycleIndex = 0;
-            for(Integer i : startingRoutes) {
-                cycleLengths[cycleIndex] = getCycleLength(input, routes, i, "Z");
+            for(String startRoute : startingRoutes) {
+                cycleLengths[cycleIndex] = getCycleLength(input, routing, startRoute, "Z");
                 cycleIndex++;
             }
             
@@ -80,37 +76,22 @@ public class Day8 {
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
     }
-    
-    public static int getRoute(ArrayList<Route> routes, String location) {
-        int index = 0;
-        for(Route route : routes) {
-            if(route.source.equals(location)) {
-                return index;
-            }
-            index++;
-        }
-        
-        return 0;
-    }
-    
-    public static long getCycleLength(String input, ArrayList<Route> routes, int index, String endsWith) {
-        Route route = routes.get(index);
-        String location = route.source;
+
+    public static long getCycleLength(String input, HashMap<String, Route> routes, String source, String endsWith) {
+        Route route = routes.get(source);
         long steps = 0;
-        while(!location.endsWith(endsWith)) {
+        while(!source.endsWith(endsWith)) {
             for(char c : input.toCharArray()) {
                 if(c == 'L') {
-                    location = route.destinationLeft;
+                    source = route.destinationLeft;
                 } else if (c == 'R') {
-                    location = route.destinationRight;        
+                    source = route.destinationRight;        
                 }
 
-                index = getRoute(routes, location);
-                route = routes.get(index);
-                location = route.source;
+                route = routes.get(source);
                 steps++;
 
-                if(location.equals("ZZZS")) break;
+                if(source.endsWith(endsWith)) break;
             }
         }
 
