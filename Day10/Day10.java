@@ -72,12 +72,8 @@ public class Day10 {
         
         // hard coded, TODO make general
         lines[index.lineIndex][index.charIndex] = 'F';
-
-        
-        System.out.println(lines[index.lineIndex][index.charIndex]);
-        
+             
         answerPart1 = steps/2;
-        long testAns = 0;
         for(int i = 0; i < outside.length; i++) {
             char previousTurn = ' ';
             boolean inTurn = false;
@@ -108,43 +104,11 @@ public class Day10 {
                 }
                 
                 if(parity % 2 == 1) {
-                    testAns++;
+                    answerPart2++;
                 }
             }
         }
-        System.out.println("Parity answer: " + testAns);
-        
-        // Flood try sadly doesnt work ): 
-        for(int i = 0; i < outside[0].length; i++) {
-            if(outside[0][i] == 0) {
-                fillOutside(0, i);
-            }
-            
-            if(outside[outside.length - 1][i] == 0) {
-                fillOutside(outside.length-1, i);
-            }        
-        }
-        
-        for(int i = 0; i < outside.length; i++) {
-            if(outside[i][0] == 0) {
-                fillOutside(i, 0);
-            }
-            
-            if(outside[i][outside[0].length - 1] == 0) {
-                fillOutside(i, outside[0].length - 1);
-            }        
-        }
-        
-        
-        for(int i = 0; i < outside.length; i++) {
-            for(int j = 0; j < outside[0].length; j++) {
-                //System.out.print(outside[i][j] + " ");
-                        
-                if(outside[i][j] == 0) answerPart2++;
-            }
-            //System.out.println("");
-        }
-        
+                    
         long endTime = Benchmark.currentTime();
         long elapsed = Benchmark.elapsedTime(startTime, endTime);
      
@@ -152,72 +116,7 @@ public class Day10 {
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
     }
-    
-    public static void fillOutside(int lineIndex, int charIndex)  {
-        outside[lineIndex][charIndex] = 1;
-        int newLineIndex = lineIndex-1;
-        
-        int newCharIndex = charIndex-1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex+1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        
-        
-        newLineIndex = lineIndex;
-        newCharIndex = charIndex-1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex+1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        
-        newLineIndex = lineIndex+1;
-        newCharIndex = charIndex-1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-        newCharIndex = charIndex+1;
-        if(inRange(newLineIndex, newCharIndex)) {
-            if(outside[newLineIndex][newCharIndex] == 0) {
-                fillOutside(newLineIndex, newCharIndex);
-            }
-        }
-    }
-    
+       
     public static Index step(Index index, Index previousIndex) {
         char lastChar = index.character;
         if(lastChar == 'S') {
@@ -358,6 +257,7 @@ public class Day10 {
                 }
             }
         }
+        
         System.out.println("ERROR" + index.character);
         return index;
     }
