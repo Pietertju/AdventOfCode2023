@@ -59,8 +59,10 @@ public class Day10 {
         Index index = new Index(currentIndex, currentChar);
         Index previousIndex = index;
         Index newIndex;
+        Index firstIndex = new Index(0, 0);
         while(!loopFound) {
             newIndex = step(index, previousIndex);
+            if(steps == 0) firstIndex = newIndex;
             previousIndex = index;
             index = newIndex;
             steps++;
@@ -68,10 +70,16 @@ public class Day10 {
             if(newIndex.character == 'S') loopFound = true;
         }
         
+        // hard coded, TODO make general
+        lines[index.lineIndex][index.charIndex] = 'F';
+
+        
+        System.out.println(lines[index.lineIndex][index.charIndex]);
+        
         answerPart1 = steps/2;
         long testAns = 0;
         for(int i = 0; i < outside.length; i++) {
-            char turnPiece = ' ';
+            char previousTurn = ' ';
             boolean inTurn = false;
             long parity = 0;
             for(int j = 0; j < outside[0].length; j++) {
@@ -85,12 +93,13 @@ public class Day10 {
                     
                     if(!inTurn) {
                         inTurn = true;
-                        turnPiece = lines[i][j];
+                        previousTurn = lines[i][j];
                     } else {
-                        if(lines[i][j] == '7' && turnPiece == 'L') {
-                            parity++;
-                        }
-                        else if(lines[i][j] == 'J' && turnPiece == 'F') {
+                        if(lines[i][j] == '7' && previousTurn == 'F') {
+                            // U turn downwards so no crossing
+                        } else if(lines[i][j] == 'J' && previousTurn == 'L') {
+                            // U turn no crossing
+                        } else {
                             parity++;
                         }
                         inTurn = false;
@@ -103,7 +112,7 @@ public class Day10 {
                 }
             }
         }
-        System.out.println("TESTANS: " + testAns);
+        System.out.println("Parity answer: " + testAns);
         
         // Flood try sadly doesnt work ): 
         for(int i = 0; i < outside[0].length; i++) {
