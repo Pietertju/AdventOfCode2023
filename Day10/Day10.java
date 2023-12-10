@@ -63,7 +63,7 @@ public class Day10 {
         long steps = 0;
         for(int i = 0; i < loopGrid.length; i++) {
             for(int j = 0; j < loopGrid[0].length; j++) {
-                if(loopGrid[i][j] == 1) steps++;
+                if(loopGrid[i][j] == PART_OF_LOOP) steps++;
             }
         }
         answerPart1 = steps/2;
