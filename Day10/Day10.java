@@ -13,19 +13,19 @@ import java.util.Queue;
  * @author Pieter
  */
 public class Day10 {
-    public static final int NOT_FLOODED = 0;
-    public static final int PART_OF_LOOP = 1;
-    public static final int FLOODED_AREA = 2;
-    public static final int AROUND_LOOP = 3;
+    static final int NOT_FLOODED = 0;
+    static final int PART_OF_LOOP = 1;
+    static final int FLOODED_AREA = 2;
+    static final int AROUND_LOOP = 3;
     
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
         
         File file = new File("res/day10/input.txt");
         
-        long answerPart1 = 0;
-        long parityAnswerPart2 = 0;
-        long floodAnswerPart2 = 0;
+        long answerPart1;
+        long parityAnswerPart2;
+        long floodAnswerPart2;
         
         FileDimensions fileDim = getFileLength(file);
         int lineCount = fileDim.lineCount; 
@@ -54,8 +54,12 @@ public class Day10 {
                 
         Index startIndex = new Index(currentIndex, currentChar);
         
-        // Part 1
+        // Replace S tile for convenience sake in parity check
+        lines[startIndex.lineIndex][startIndex.charIndex] = replaceS(lines, startIndex);
+       
+        // Part 1 
         int[][] loopGrid = findLoop(lines, startIndex);
+        
         long steps = 0;
         for(int i = 0; i < loopGrid.length; i++) {
             for(int j = 0; j < loopGrid[0].length; j++) {
@@ -63,11 +67,7 @@ public class Day10 {
             }
         }
         answerPart1 = steps/2;
-
                 
-        // hard coded, TODO make general based on first and previous index
-        lines[startIndex.lineIndex][startIndex.charIndex] = 'F';
-
         // Part 2 parity checking method
         parityAnswerPart2 = parityCheckInsideLoop(loopGrid, lines);
         
@@ -75,15 +75,13 @@ public class Day10 {
         int[][] floodGrid = createFloodGrid(loopGrid, lines);
         floodGrid = floodGrid(floodGrid);
         
-        long interiorTiles = 0;
-        
-        // After flooding, the only NOT_FLOODED tiles that remain are interior tiles;
+        long interiorTiles = 0;      
         for(int i = 0; i < floodGrid.length; i++) {
             for(int j = 0; j < floodGrid[0].length; j++) {
+                // After flooding, the only NOT_FLOODED tiles that remain are interior tiles;
                 if(floodGrid[i][j] == NOT_FLOODED) interiorTiles++;
             }
-        }
-        
+        }    
         floodAnswerPart2 = interiorTiles / 9;
         
         long endTime = Benchmark.currentTime();
@@ -97,7 +95,7 @@ public class Day10 {
 
     
     public static int[][] floodGrid(int[][] floodGrid) {
-        Queue<Index> nodes = new LinkedList<Index>();
+        Queue<Index> nodes = new LinkedList<>();
         
         // Since we expanded each grid entry to a new 3 by 3 grid we are guaranteed that the 0, 0 coordinates are outside our loop
         Index startIndex = new Index(0, 0);
@@ -110,43 +108,41 @@ public class Day10 {
         while(!nodes.isEmpty()) {
             Index currentIndex = nodes.poll();
                         
-            int newLineIndex = currentIndex.lineIndex-1;
-            int newCharIndex = currentIndex.charIndex;
-            if(inRange(newLineIndex, newCharIndex, floodGrid)) {
-                if(floodGrid[newLineIndex][newCharIndex] == NOT_FLOODED || floodGrid[newLineIndex][newCharIndex] == AROUND_LOOP) {
-                    Index newIndex = new Index(newLineIndex, newCharIndex);
-                    floodGrid[newIndex.lineIndex][newIndex.charIndex] = FLOODED_AREA;
-                    nodes.add(newIndex);
+
+            Index nextIndex = new Index(currentIndex.lineIndex-1, currentIndex.charIndex);
+            int value;
+            if(inRange(nextIndex, floodGrid)) {
+                value = nextIndex.getValue(floodGrid);
+                if(value == NOT_FLOODED || value == AROUND_LOOP) {
+                    floodGrid[nextIndex.lineIndex][nextIndex.charIndex] = FLOODED_AREA;
+                    nodes.add(nextIndex);
                 }
             }
 
-            newLineIndex = currentIndex.lineIndex;
-            newCharIndex = currentIndex.charIndex - 1;
-            if(inRange(newLineIndex, newCharIndex, floodGrid)) {
-                if(floodGrid[newLineIndex][newCharIndex] == NOT_FLOODED || floodGrid[newLineIndex][newCharIndex] == AROUND_LOOP) {
-                    Index newIndex = new Index(newLineIndex, newCharIndex);
-                    floodGrid[newIndex.lineIndex][newIndex.charIndex] = FLOODED_AREA;
-                    nodes.add(newIndex);
+            nextIndex = new Index(currentIndex.lineIndex, currentIndex.charIndex - 1);
+            if(inRange(nextIndex, floodGrid)) {
+                value = nextIndex.getValue(floodGrid);
+                if(value == NOT_FLOODED || value == AROUND_LOOP) {
+                    floodGrid[nextIndex.lineIndex][nextIndex.charIndex] = FLOODED_AREA;
+                    nodes.add(nextIndex);
                 }
             }
 
-            newLineIndex = currentIndex.lineIndex;
-            newCharIndex = currentIndex.charIndex + 1;
-            if(inRange(newLineIndex, newCharIndex, floodGrid)) {
-                if(floodGrid[newLineIndex][newCharIndex] == NOT_FLOODED || floodGrid[newLineIndex][newCharIndex] == AROUND_LOOP) {
-                    Index newIndex = new Index(newLineIndex, newCharIndex);
-                    floodGrid[newIndex.lineIndex][newIndex.charIndex] = FLOODED_AREA;
-                    nodes.add(newIndex);
+            nextIndex = new Index(currentIndex.lineIndex, currentIndex.charIndex + 1);
+            if(inRange(nextIndex, floodGrid)) {
+                value = nextIndex.getValue(floodGrid);
+                if(value == NOT_FLOODED || value == AROUND_LOOP) {
+                    floodGrid[nextIndex.lineIndex][nextIndex.charIndex] = FLOODED_AREA;
+                    nodes.add(nextIndex);
                 }
             }
 
-            newLineIndex = currentIndex.lineIndex  + 1;
-            newCharIndex = currentIndex.charIndex;
-            if(inRange(newLineIndex, newCharIndex, floodGrid)) {
-                if(floodGrid[newLineIndex][newCharIndex] == NOT_FLOODED || floodGrid[newLineIndex][newCharIndex] == AROUND_LOOP) {
-                    Index newIndex = new Index(newLineIndex, newCharIndex);
-                    floodGrid[newIndex.lineIndex][newIndex.charIndex] = FLOODED_AREA;
-                    nodes.add(newIndex);
+            nextIndex = new Index(currentIndex.lineIndex+1, currentIndex.charIndex);
+            if(inRange(nextIndex, floodGrid)) {
+                value = nextIndex.getValue(floodGrid);
+                if(value == NOT_FLOODED || value == AROUND_LOOP) {
+                    floodGrid[nextIndex.lineIndex][nextIndex.charIndex] = FLOODED_AREA;
+                    nodes.add(nextIndex);
                 }
             }
         }
@@ -200,7 +196,49 @@ public class Day10 {
         }
         return floodGrid;
     }
-      
+    
+    public static char replaceS(char[][] grid, Index sIndex) {
+        boolean up = false, right = false, down = false, left = false;
+        
+        Index checkIndex = new Index(sIndex.lineIndex-1, sIndex.charIndex);
+        char c;
+        if(inRange(checkIndex, grid)) {
+            c = checkIndex.getCharacter(grid);
+            if(c == '|' || c == '7' || c == 'F') {
+                up = true;
+            }
+        }
+        checkIndex = new Index(sIndex.lineIndex, sIndex.charIndex-1);
+        if(inRange(checkIndex, grid)) {
+            c = checkIndex.getCharacter(grid);
+            if(c == '-' || c == 'L' || c == 'F') {
+                left = true;
+            }
+        }
+        checkIndex = new Index(sIndex.lineIndex, sIndex.charIndex+1);
+        if(inRange(checkIndex, grid)) {
+            c = checkIndex.getCharacter(grid);
+            if(c == '-' || c == '7' || c == 'J') {
+                right = true;
+            }
+        }
+        checkIndex = new Index(sIndex.lineIndex+1, sIndex.charIndex);
+        if(inRange(checkIndex, grid)) {
+            c = checkIndex.getCharacter(grid);
+            if(c == '|' || c == 'J' || c == 'L') {
+                down = true;
+            }
+        }
+        
+        if(up && down) return '|';
+        else if(up && left) return 'J';
+        else if(up && right) return 'L';
+        else if(down && left) return '7';
+        else if(down && right) return 'F';
+        else if(left && right) return '-';
+        return 'S';
+    }
+    
     public static int[][] findLoop(char[][] lines, Index startIndex) {
         int[][] loopGrid = new int[lines.length][lines[0].length];
         
@@ -216,7 +254,7 @@ public class Day10 {
             index = newIndex;
             
             loopGrid[index.lineIndex][index.charIndex] = PART_OF_LOOP;    
-            if(index.getCharacter(lines) == 'S') loopFound = true;
+            if(index.lineIndex == startIndex.lineIndex && index.charIndex == startIndex.charIndex) loopFound = true;
         }
         
         return loopGrid;
@@ -230,20 +268,21 @@ public class Day10 {
             long parity = 0;
             for(int j = 0; j < loopGrid[0].length; j++) {
                 if(loopGrid[i][j] == PART_OF_LOOP) {
-                    if(lines[i][j] == '|') {
+                    char c = lines[i][j];
+                    if(c == '|') {
                         parity++;
                         continue;
                     }
                     
-                    if(lines[i][j] == '-') continue;
+                    if(c == '-') continue;
                     
                     if(!inTurn) {
                         inTurn = true;
                         previousTurn = lines[i][j];
                     } else {
-                        if(lines[i][j] == '7' && previousTurn == 'F') {
+                        if(c == '7' && previousTurn == 'F') {
                             // U turn downwards so no crossing
-                        } else if(lines[i][j] == 'J' && previousTurn == 'L') {
+                        } else if(c == 'J' && previousTurn == 'L') {
                             // U turn no crossing
                         } else {
                             parity++;
@@ -264,140 +303,113 @@ public class Day10 {
                
     public static Index step(char[][] lines, Index index, Index previousIndex) {
         char lastChar = index.getCharacter(lines);
-        if(lastChar == 'S') {
-            int lineIndex = index.lineIndex-1;
-            int charIndex = index.charIndex;
-            if(inRange(lineIndex, charIndex, lines)) {
-                if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == '7' || lines[lineIndex][charIndex] == 'S') {
-                    return new Index(lineIndex, charIndex);
-                }
-            }
-            lineIndex = index.lineIndex + 1;
-            if(inRange(lineIndex, charIndex, lines)) {
-                if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                    return new Index(lineIndex, charIndex);
-                }
-            }
-            
-            lineIndex = index.lineIndex;
-            charIndex = index.charIndex-1;
-            if(inRange(lineIndex, charIndex, lines)) {
-                if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                    return new Index(lineIndex, charIndex);
-                }
-            }
-            
-            charIndex = index.charIndex+1;
-            if(inRange(lineIndex, charIndex, lines)) {
-                if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == '7' || lines[lineIndex][charIndex] == 'S') {
-                    return new Index(lineIndex, charIndex);
-                }
-            }
-        } else if(lastChar == '|') {
-            if(previousIndex.lineIndex < index.lineIndex) {
-                int lineIndex = index.lineIndex + 1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+        Index nextIndex;
+        char c;
+        if(lastChar == '|') {
+            if(previousIndex.lineIndex < index.lineIndex) {             
+                nextIndex = new Index(index.lineIndex + 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == 'J' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex-1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == '7' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex - 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == 'F' || c == '7') {
+                        return nextIndex;
                     }
                 }
             }        
         } else if(lastChar == '-') {
             if(previousIndex.charIndex < index.charIndex) {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex+1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == '7' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex + 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == 'J' || c == '7') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex - 1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex - 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == 'F' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             }
         } else if(lastChar == '7') {
-            if(previousIndex.charIndex < index.charIndex) {
-                int lineIndex = index.lineIndex+1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+            if(previousIndex.charIndex < index.charIndex) {             
+                nextIndex = new Index(index.lineIndex + 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == 'J' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex - 1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex - 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == 'F' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             }
         } else if(lastChar == 'F') {
             if(previousIndex.charIndex > index.charIndex) {
-                int lineIndex = index.lineIndex+1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex + 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == 'J' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex + 1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == '7' ||  lines[lineIndex][charIndex] == 'J' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex + 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == '7' || c == 'J') {
+                        return nextIndex;
                     }
                 }
             }
         } else if(lastChar == 'J') {
             if(previousIndex.lineIndex < index.lineIndex) {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex - 1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'F' ||  lines[lineIndex][charIndex] == 'L' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex - 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == 'F' || c == 'L') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex - 1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == '7' ||  lines[lineIndex][charIndex] == 'F' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex - 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == '7' || c == 'F') {
+                        return nextIndex;
                     }
                 }
             }
         } else if(lastChar == 'L') {
             if(previousIndex.lineIndex < index.lineIndex) {
-                int lineIndex = index.lineIndex;
-                int charIndex = index.charIndex + 1;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '-' ||  lines[lineIndex][charIndex] == 'J' ||  lines[lineIndex][charIndex] == '7' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex, index.charIndex + 1);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '-' || c == 'J' || c == '7') {
+                        return nextIndex;
                     }
                 }
             } else {
-                int lineIndex = index.lineIndex - 1;
-                int charIndex = index.charIndex;
-                if(inRange(lineIndex, charIndex, lines)) {
-                    if(lines[lineIndex][charIndex] == '|' ||  lines[lineIndex][charIndex] == '7' ||  lines[lineIndex][charIndex] == 'F' || lines[lineIndex][charIndex] == 'S') {
-                        return new Index(lineIndex, charIndex);
+                nextIndex = new Index(index.lineIndex - 1, index.charIndex);
+                if(inRange(nextIndex, lines)) {
+                    c = nextIndex.getCharacter(lines);
+                    if(c == '|' || c == '7' || c == 'F') {
+                        return nextIndex;
                     }
                 }
             }
@@ -406,13 +418,13 @@ public class Day10 {
         System.out.println("ERROR" + index.getCharacter(lines));
         return index;
     }
-    
-    public static boolean inRange(int lineIndex, int charIndex, char[][] array) {
-        return (lineIndex >= 0 && lineIndex < array.length && charIndex >= 0 && charIndex < array[0].length);
+       
+    public static boolean inRange(Index index, char[][] array) {
+        return (index.lineIndex >= 0 && index.lineIndex < array.length && index.charIndex >= 0 && index.charIndex < array[0].length);
     }
     
-    public static boolean inRange(int lineIndex, int charIndex, int[][] array) {
-        return (lineIndex >= 0 && lineIndex < array.length && charIndex >= 0 && charIndex < array[0].length);
+    public static boolean inRange(Index index, int[][] array) {
+        return (index.lineIndex >= 0 && index.lineIndex < array.length && index.charIndex >= 0 && index.charIndex < array[0].length);
     }
     
     public static class Index {
@@ -426,6 +438,10 @@ public class Day10 {
         
         public char getCharacter(char[][] lines) {
             return lines[lineIndex][charIndex];
+        }
+        
+        public int getValue(int[][] grid) {
+            return grid[lineIndex][charIndex];
         }
     }
     
