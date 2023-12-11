@@ -278,7 +278,7 @@ public class Day10 {
                     
                     if(!inTurn) {
                         inTurn = true;
-                        previousTurn = lines[i][j];
+                        previousTurn = c;
                     } else {
                         if(c == '7' && previousTurn == 'F') {
                             // U turn downwards so no crossing
