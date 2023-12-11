@@ -1,4 +1,3 @@
-# Please note this code was written on my phone on some online IDE
 import time
 
 def distance(g1, g2, extraColumns, extraRows):
