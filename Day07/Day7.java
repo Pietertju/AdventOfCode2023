@@ -83,60 +83,24 @@ public class Day7 {
         }
         
         private int getRank(boolean jokers) {
-            String copyOfHand = this.hand;
+            var mostCommonSet = this.hand.chars().mapToObj(x -> (char) x).filter(x -> (joker) ? x != 'J' : true)
+                            .collect(groupingBy(x -> x, counting()));
+             
+            long mostCommonCount = 0;
+            long distinctCharacters = 1;
+            
+            if(!mostCommonSet.isEmpty()) {
+                mostCommonCount = mostCommonSet.entrySet().stream().max(comparingByValue()).get().getValue();
+                distinctCharacters = this.hand.chars().filter(x -> (joker) ? x != 'J' : true).distinct().count();
+            }
             
             if(jokers) {
-                this.hand = this.hand.replace("J","");
-                if(this.hand.length() == 0) {
-                    this.hand = copyOfHand;
-                    return 7;
-                }
+                long numJokers = this.hand.chars().filter(x -> x == 'J').count();
+                mostCommonCount += numJokers;
             }
             
-            long mostCommonCount = this.hand.chars().mapToObj(x -> (char) x)
-                            .collect(groupingBy(x -> x, counting()))
-                            .entrySet()
-                            .stream()
-                            .max(comparingByValue()).get().getValue();
             
-            // Add jokers to most common count
-            mostCommonCount += (5-this.hand.length());
-            
-            char mostCommonCharacter = this.hand.chars().mapToObj(x -> (char) x)
-                            .collect(groupingBy(x -> x, counting()))
-                            .entrySet()
-                            .stream()
-                            .max(comparingByValue()).get().getKey();
-            
-            int rank = -1;
-            
-            if(mostCommonCount == 5) {
-                rank = 7;
-            } else if(mostCommonCount == 4) {
-                rank = 6;
-            } else if (mostCommonCount == 3) {
-                long leastCommon = this.hand.chars().mapToObj(x -> (char) x)
-                            .collect(groupingBy(x -> x, counting()))
-                            .entrySet()
-                            .stream()
-                            .min(comparingByValue()).get().getValue();
-                if(leastCommon == 2) rank = 5;
-                else rank = 4;
-            } else if (mostCommonCount == 2) {
-                String handWithoutMostCommon = this.hand.replace(Character.toString(mostCommonCharacter), "");
-                long secondMostCommon = handWithoutMostCommon.chars().mapToObj(x -> (char) x)
-                            .collect(groupingBy(x -> x, counting()))
-                            .entrySet()
-                            .stream()
-                            .max(comparingByValue()).get().getValue();
-                
-                if(secondMostCommon == 2) rank = 3;
-                else rank = 2;
-            } else if (mostCommonCount == 1) {
-                rank = 1;
-            }
-            
-            this.hand = copyOfHand;
+            int rank = (int) (mostCommonCount - distinctCharacters);
             return rank;
         }
         
