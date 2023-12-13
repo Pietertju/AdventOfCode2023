@@ -18,7 +18,7 @@ public class Day12 {
         
         long answerPart1 = 0;
         long answerPart2 = 0;
-               
+        
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
                      
@@ -64,7 +64,7 @@ public class Day12 {
                 // Simplify string
                 inputStringPart2 = inputStringPart2.replaceAll("\\.{2,}", ".");
                 
-                boolean[] brokenSequence = new boolean[totalNumbers + numbers.length + 1];
+                boolean[] brokenSequence = new boolean[totalNumbers + numbers.length + 1];               
                 boolean[] brokenSequencePart2 = new boolean[(totalNumbersPart2 + numbersPart2.length) + 1];
                 
                 //part 1
@@ -75,8 +75,7 @@ public class Day12 {
                         sequenceIndex++;
                     }
                     sequenceIndex++;
-                }
-                
+                }            
                 
                 //part 2
                 sequenceIndex = 1;
@@ -87,7 +86,7 @@ public class Day12 {
                     }
                     sequenceIndex++;
                 }
-                
+
                 answerPart1 += possibleSolutions(inputString.toCharArray(), brokenSequence);
                 answerPart2 += possibleSolutions(inputStringPart2.toCharArray(), brokenSequencePart2);
             }                     
@@ -96,7 +95,6 @@ public class Day12 {
         }
         long endTime = Benchmark.currentTime();
         long elapsed = Benchmark.elapsedTime(startTime, endTime);
-     
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
@@ -109,7 +107,7 @@ public class Day12 {
 
         for (int i = 1; i <= input.length; i++) {
             int inputIndex = i-1;
-            for (int j = 1; j <= brokenSequence.length; j++) {
+            for (int j = 1; j <= Math.min(brokenSequence.length, i); j++) {
                 int brokenIndex = j-1;
                 boolean broken = false;
                 boolean working = false;
@@ -133,7 +131,16 @@ public class Day12 {
                 dp[i][j] = sum;
             }
         }
-        
+        //prettyPrint(dp);
         return dp[input.length][brokenSequence.length];
+    }
+    
+    public static void prettyPrint(long[][] array) {
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                System.out.print(array[i][j] + " ");
+            }
+            System.out.println("");                    
+        }
     }
 }
