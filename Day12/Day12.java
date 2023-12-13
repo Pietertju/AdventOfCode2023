@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  *
@@ -13,18 +14,82 @@ import java.io.IOException;
 public class Day12 {
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
-        File file = new File("res/day12/test.txt");
+        File file = new File("res/day12/input.txt");
         
         long answerPart1 = 0;
         long answerPart2 = 0;
-        
-        int lines = 0;
-       
+               
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
                      
             while ((line = br.readLine()) != null) {
+                line = line.trim();
+                String[] split = line.split(" ");
                 
+                String inputString = split[0];
+                
+                String inputStringPart2 = inputString;
+                for(int i = 0; i < 4; i++) {
+                    inputStringPart2 = inputStringPart2 +"?"+inputString;
+                }
+                                
+                String[] numStrings = split[1].split(",");
+                
+                int[] numbers = new int[numStrings.length];
+                int[] numbersPart2 = new int[numbers.length * 5];
+                
+                int totalNumbers = 0;
+                
+                //part 1
+                for(int i = 0 ; i < numbers.length; i++) {
+                    numbers[i] = Integer.parseInt(numStrings[i]);
+                    totalNumbers += numbers[i];
+                }
+                
+                //part 2
+                int part2Index = 0;
+                for(int j = 0; j < 5; j++) {
+                    for(int number : numbers) {
+                        numbersPart2[part2Index] = number;
+                        part2Index++;
+                    }
+                }
+                
+                int totalNumbersPart2 = 5*totalNumbers;
+                
+                // Add padding
+                inputString = "." + inputString + ".";
+                inputStringPart2 = "." + inputStringPart2 + ".";
+                
+                // Simplify string
+                inputStringPart2 = inputStringPart2.replaceAll("\\.{2,}", ".");
+                
+                boolean[] brokenSequence = new boolean[totalNumbers + numbers.length + 1];
+                boolean[] brokenSequencePart2 = new boolean[(totalNumbersPart2 + numbersPart2.length) + 1];
+                
+                //part 1
+                int sequenceIndex = 1;
+                for(int i = 0; i < numbers.length; i++) {
+                    for(int j = 0; j < numbers[i]; j++) {
+                        brokenSequence[sequenceIndex]=true;
+                        sequenceIndex++;
+                    }
+                    sequenceIndex++;
+                }
+                
+                
+                //part 2
+                sequenceIndex = 1;
+                for(int i = 0; i < numbersPart2.length; i++) {
+                    for(int j = 0; j < numbersPart2[i]; j++) {
+                        brokenSequencePart2[sequenceIndex]=true;
+                        sequenceIndex++;
+                    }
+                    sequenceIndex++;
+                }
+                
+                answerPart1 += possibleSolutions(inputString.toCharArray(), brokenSequence);
+                answerPart2 += possibleSolutions(inputStringPart2.toCharArray(), brokenSequencePart2);
             }                     
         } catch(IOException e) {
             System.out.println(e.toString());
@@ -35,5 +100,40 @@ public class Day12 {
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Part 1 and 2 took: " + elapsed + " ms combined");
+    }
+    
+    private static long possibleSolutions(char[] input, boolean[] brokenSequence){
+        //dp[i][j] = hoeveel mogelijkheden when matching chars[0 to i] with springs[0 to j]
+        long[][] dp = new long[input.length+1][brokenSequence.length+1];
+        dp[0][0] = 1;
+
+        for (int i = 1; i <= input.length; i++) {
+            int inputIndex = i-1;
+            for (int j = 1; j <= brokenSequence.length; j++) {
+                int brokenIndex = j-1;
+                boolean broken = false;
+                boolean working = false;
+                
+                if(input[inputIndex] == '#') {
+                    broken = true;
+                } else if(input[inputIndex] == '.') {
+                    working = true;
+                } else if(input[inputIndex] == '?') {
+                    // both are possible
+                    working = true;
+                    broken = true;
+                }
+                
+                long sum = 0;      
+                if(broken && brokenSequence[brokenIndex]){
+                    sum += dp[i-1][j-1];                   
+                } else if (working && !brokenSequence[brokenIndex]) { 
+                    sum += dp[i-1][j-1] + dp[i-1][j];   
+                }
+                dp[i][j] = sum;
+            }
+        }
+        
+        return dp[input.length][brokenSequence.length];
     }
 }
