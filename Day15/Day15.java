@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -20,7 +19,6 @@ public class Day15 {
         long answerPart1 = 0;
         long answerPart2 = 0;
         
-        int lines = 0;
         String[] inputs = new String[0];
         
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -49,7 +47,6 @@ public class Day15 {
             if(inputs[i].contains("-")) {
                 label = inputs[i].substring(0,inputs[i].length()-1);
                 int box = computeHash(label);
-                boolean alreadyThere = false;
                 for(int j = 0; j < boxes[box].size(); j++) {
                     if(boxes[box].get(j).label.equals(label)) {
                         boxes[box].remove(j);
