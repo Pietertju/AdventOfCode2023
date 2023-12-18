@@ -44,14 +44,13 @@ public class Day15 {
             answerPart1 += hash;
             
             String label = "";
-            long focalLength = -1;
             if(inputs[i].contains("-")) {
                 label = inputs[i].substring(0,inputs[i].length()-1);
                 int box = computeHash(label);
                 boxes[box].remove(label);
             } else {
                 label = inputs[i].split("\\=")[0];
-                focalLength = Long.parseLong(inputs[i].split("\\=")[1]);
+                long focalLength = Long.parseLong(inputs[i].split("\\=")[1]);
                 
                 int box = computeHash(label);
                 boxes[box].put(label, focalLength);
