@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /**
  *
@@ -32,53 +34,36 @@ public class Day15 {
             System.out.println(e.toString());
         }
         
-        ArrayList<Lens>[] boxes = new ArrayList[256];
+        LinkedHashMap<String, Long>[] boxes = new LinkedHashMap[256];
         for(int i = 0; i < boxes.length; i++) {
-            boxes[i] = new ArrayList<>();
+            boxes[i] = new LinkedHashMap<>();
         }             
         
         for(int i = 0; i < inputs.length; i++) {
             int hash = computeHash(inputs[i]);
             answerPart1 += hash;
             
-            
             String label = "";
-            long vocalLength = -1;
+            long focalLength = -1;
             if(inputs[i].contains("-")) {
                 label = inputs[i].substring(0,inputs[i].length()-1);
                 int box = computeHash(label);
-                for(int j = 0; j < boxes[box].size(); j++) {
-                    if(boxes[box].get(j).label.equals(label)) {
-                        boxes[box].remove(j);
-                        break;
-                    }
-                }
+                boxes[box].remove(label);
             } else {
                 label = inputs[i].split("\\=")[0];
-                vocalLength = Long.parseLong(inputs[i].split("\\=")[1]);
+                focalLength = Long.parseLong(inputs[i].split("\\=")[1]);
                 
                 int box = computeHash(label);
-                boolean alreadyThere = false;
-                for(int j = 0; j < boxes[box].size(); j++) {
-                    if(boxes[box].get(j).label.equals(label)) {
-                        boxes[box].get(j).setVocalLength(vocalLength);
-                        alreadyThere = true;
-                        break;
-                    }
-                }
-                
-                if(!alreadyThere) {
-                    Lens lens = new Lens(label);
-                    lens.setVocalLength(vocalLength);
-                    boxes[box].add(lens);
-                }
+                boxes[box].put(label, focalLength);
             }
         }
         int boxNumber = 1;
-        for(ArrayList<Lens> lensList : boxes) {
-            for(int i = 0; i < lensList.size(); i++) {
-                long score = boxNumber * (i+1) * lensList.get(i).focalLength;
+        for(LinkedHashMap<String, Long> hm : boxes) {
+            int i = 0;
+            for(long focalLength : hm.values()) {
+                long score = boxNumber * (i+1) * focalLength;
                 answerPart2 += score;
+                i++;
             }
             boxNumber++;
         }
