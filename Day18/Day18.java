@@ -64,9 +64,9 @@ public class Day18 {
         
         long endTime = Benchmark.currentTime();
         
-        double elapsedParse = Benchmark.elapsedTimeNano(startTime, parseEnd);
-        double elapsedPart1 = Benchmark.elapsedTimeNano(parseEnd, betweenTime);
-        double elapsedPart2 = Benchmark.elapsedTimeNano(betweenTime, endTime);
+        double elapsedParse = Benchmark.elapsedTime(startTime, parseEnd);
+        double elapsedPart1 = Benchmark.elapsedTime(parseEnd, betweenTime);
+        double elapsedPart2 = Benchmark.elapsedTime(betweenTime, endTime);
      
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);

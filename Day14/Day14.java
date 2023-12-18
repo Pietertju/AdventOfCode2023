@@ -68,7 +68,7 @@ public class Day14 {
         answerPart2 = countLoad(solutionGrid);
         
         long endTime = Benchmark.currentTime();
-        long elapsed = Benchmark.elapsedTime(startTime, endTime);
+        double elapsed = Benchmark.elapsedTime(startTime, endTime);
      
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);

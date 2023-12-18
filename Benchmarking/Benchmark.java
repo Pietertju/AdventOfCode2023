@@ -1,5 +1,8 @@
 package Benchmarking;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  *
  * @author Pieter
@@ -10,13 +13,17 @@ public class Benchmark {
         return System.nanoTime();
     }
     
-    public static double elapsedTimeNano(long time1, long time2) {
+    public static double elapsedTime(long time1, long time2) {
         double diff = time2-time1;
         double conversion = 1000000;
-        return diff / conversion;
+        return round(diff / conversion, 2);
     }
-    
-    public static long elapsedTime(long time1, long time2) {
-        return (time2-time1)/1000000;
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 }

@@ -56,9 +56,9 @@ public class Day17 {
         
         long endTime = Benchmark.currentTime();
         
-        long elapsedParse = Benchmark.elapsedTime(startTime, parseEnd);
-        long elapsedPart1 = Benchmark.elapsedTime(parseEnd, betweenTime);
-        long elapsedPart2 = Benchmark.elapsedTime(betweenTime, endTime);
+        double elapsedParse = Benchmark.elapsedTime(startTime, parseEnd);
+        double elapsedPart1 = Benchmark.elapsedTime(parseEnd, betweenTime);
+        double elapsedPart2 = Benchmark.elapsedTime(betweenTime, endTime);
      
         System.out.println("Part 1: " + answerPart1);
         System.out.println("Part 2: " + answerPart2);
@@ -162,7 +162,6 @@ public class Day17 {
         }
         
         public Map<Node, Integer> getAdjacentNodes(int[][] grid, int min, int max) {
-            adjacentNodes = new HashMap<>();
             //Hardcoded af, could generalize probs
             Coords leftDir = new Coords(coords.x, coords.y - 1);
             Coords rightDir = new Coords(coords.x, coords.y + 1);
