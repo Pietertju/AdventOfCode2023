@@ -60,6 +60,7 @@ public class Day18 {
                 
         long betweenTime = Benchmark.currentTime();
         
+        //Part 2
         answerPart2 = computeArea(computeGraph(instructionsPart2));
         
         long endTime = Benchmark.currentTime();
@@ -102,7 +103,7 @@ public class Day18 {
         return nodes;
     }
     
-    // Shoelace formula
+    // Compute area of graph using the shoelace formula
     public static long computeArea(Node[] nodes) {
         long sum1 = 0;
         long sum2 = 0;
