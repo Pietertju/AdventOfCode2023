@@ -64,7 +64,7 @@ public class Day17 {
         System.out.println("Part 2: " + answerPart2);
         System.out.println("Parsing input took: " + elapsedParse + " ms");
         System.out.println("Part 1 took: " + elapsedPart1 + " ms");
-        System.out.println("Part 1 and 2 took: " + elapsedPart2 + " ms");
+        System.out.println("Part 2 took: " + elapsedPart2 + " ms");
     }
     
     
