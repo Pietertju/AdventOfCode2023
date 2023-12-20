@@ -5,9 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 /**
  *
@@ -90,13 +88,8 @@ public class Day15 {
     
     public static class Lens {
         String label;
-        long focalLength;
         public Lens(String label) {
             this.label = label;
-        }
-        
-        void setVocalLength(long focalLength) {
-            this.focalLength = focalLength;
         }
     }
 }

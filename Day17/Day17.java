@@ -6,12 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
@@ -23,8 +19,8 @@ public class Day17 {
         long startTime = Benchmark.currentTime();
         File file = new File("res/day17/input.txt");
         
-        long answerPart1 = 0;
-        long answerPart2 = 0;
+        long answerPart1;
+        long answerPart2;
                 
         ArrayList<String> input = new ArrayList<>();
         
@@ -47,12 +43,12 @@ public class Day17 {
         long parseEnd = Benchmark.currentTime();
         
         //Part 1
-        answerPart1 = calculateShortestPathFromSource(grid, 0, 3, false);
+        answerPart1 = shortestDistanceDijkstra(grid, 0, 3);
         
         long betweenTime = Benchmark.currentTime();
         
         //Part 2
-        answerPart2 = calculateShortestPathFromSource(grid, 4, 10, false);
+        answerPart2 = shortestDistanceDijkstra(grid, 4, 10);
         
         long endTime = Benchmark.currentTime();
         
@@ -68,92 +64,51 @@ public class Day17 {
     }
     
     
-    public static long calculateShortestPathFromSource(int[][] grid, int min, int max, boolean showOutput) {
+    public static long shortestDistanceDijkstra(int[][] grid, int min, int max) {
         Node source = new Node(new Coords(0,0), new Coords(-1,-1), 0);
         
-        long shortestDistance = 0;
+        long shortestDistance = Integer.MAX_VALUE;
         
         source.setDistance(0);
 
-        Set<Node> settledNodes = new HashSet<>();
-        Set<Node> unsettledNodes = new HashSet<>();
+        Set<Node> visitedNodes = new HashSet<>();
+        PriorityQueue<Node> queue = new PriorityQueue<>();
 
-        unsettledNodes.add(source);
-        boolean found = false;
-        List<Node> shortestPath = new ArrayList<>();
-                    
-        while (!unsettledNodes.isEmpty() && !found) {            
-            Node currentNode = getLowestDistanceNode(unsettledNodes);
-            
-            unsettledNodes.remove(currentNode);
-            
-            Set<Entry<Node, Integer>> adjacentPairs = currentNode.getAdjacentNodes(grid, min, max).entrySet();
-            for (Entry<Node, Integer> adjacencyPair : adjacentPairs) {
-                Node adjacentNode = adjacencyPair.getKey();
-                Integer edgeWeight = adjacencyPair.getValue();
-                if (!settledNodes.contains(adjacentNode)) {
+        queue.add(source);
+        visitedNodes.add(source);
+        
+        boolean found = false;        
+        while (!queue.isEmpty() && !found) {            
+            Node currentNode = queue.poll();
+            ArrayList<Node> adjacentNodes = currentNode.getAdjacentNodes(grid, min, max);
+            for (Node adjacentNode : adjacentNodes) {
+                int edgeWeight = grid[adjacentNode.coords.x][adjacentNode.coords.y];
+                if (!visitedNodes.contains(adjacentNode)) {     
+                    int sourceDistance = currentNode.getDistance();
+                    adjacentNode.setDistance(sourceDistance + edgeWeight);
                     if(adjacentNode.coords.x == grid.length-1 && adjacentNode.coords.y == grid[0].length-1) {
                         if(adjacentNode.consecutive >= min) {
-                            calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
+                            shortestDistance = adjacentNode.getDistance();
                             found = true;
-                            shortestDistance = adjacentNode.distance;
-                            shortestPath = adjacentNode.getShortestPath();
                             break;
-                        } 
-                    } else {
-                        calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
-                        unsettledNodes.add(adjacentNode);
+                        }
                     }
+                    queue.add(adjacentNode);
+                    visitedNodes.add(adjacentNode);
                 }
             }
-            settledNodes.add(currentNode);
-        }
-        
-        if(showOutput) {
-            int[][] outputGrid = new int[grid.length][grid[0].length];
-            int i = 0;
-            for(Node n : shortestPath) {
-                outputGrid[n.coords.x][n.coords.y] = i++;
-            } prettyPrint(outputGrid);
         }
 
         return shortestDistance;
     }
-    
-    private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
-        Node lowestDistanceNode = null;
-        int lowestDistance = Integer.MAX_VALUE;
-        for (Node node: unsettledNodes) {
-            int nodeDistance = node.getDistance();
-            if (nodeDistance < lowestDistance) {
-                lowestDistance = nodeDistance;
-                lowestDistanceNode = node;
-            }
-        }
-        return lowestDistanceNode;
-    }
-    
-    private static void calculateMinimumDistance(Node node, Integer edgeWeigh, Node sourceNode) {
-        Integer sourceDistance = sourceNode.getDistance();
-        if (sourceDistance + edgeWeigh < node.getDistance()) {
-            node.setDistance(sourceDistance + edgeWeigh);
-            LinkedList<Node> shortestPath = new LinkedList<>(sourceNode.getShortestPath());
-            shortestPath.add(sourceNode);
-            node.setShortestPath(shortestPath);
-        }
-    }
-    
-    public static class Node {
+
+    public static class Node implements Comparable<Node> {
     
         private Coords coords;
         private Coords previous;
         private int consecutive;
                 
-        private List<Node> shortestPath = new LinkedList<>();
-
         private Integer distance = Integer.MAX_VALUE;
-
-        Map<Node, Integer> adjacentNodes = new HashMap<>();
 
         public Node(Coords coords, Coords previous, int consecutive) {
             this.coords = coords;
@@ -161,7 +116,8 @@ public class Day17 {
             this.consecutive = consecutive;
         }
         
-        public Map<Node, Integer> getAdjacentNodes(int[][] grid, int min, int max) {
+        public ArrayList<Node> getAdjacentNodes(int[][] grid, int min, int max) {
+            ArrayList<Node> adjacentNodes = new ArrayList<>();
             //Hardcoded af, could generalize probs
             Coords leftDir = new Coords(coords.x, coords.y - 1);
             Coords rightDir = new Coords(coords.x, coords.y + 1);
@@ -178,27 +134,27 @@ public class Day17 {
                         // going left
                         left.setConsecutive(consecutive+1);
                         if(left.consecutive <= max && left.coords.inBound(grid)) {
-                            adjacentNodes.put(left, grid[left.coords.x][left.coords.y]);
+                            adjacentNodes.add(left);
                         }
                         if(consecutive < min) return adjacentNodes;
                         if(up.coords.inBound(grid)) {
-                            adjacentNodes.put(up, grid[up.coords.x][up.coords.y]);
+                            adjacentNodes.add(up);
                         }
                         if(down.coords.inBound(grid)) {
-                            adjacentNodes.put(down, grid[down.coords.x][down.coords.y]);
+                            adjacentNodes.add(down);
                         }
                     } else {
                         // going right
                         right.setConsecutive(consecutive+1);
                         if(right.consecutive <= max && right.coords.inBound(grid)) {
-                            adjacentNodes.put(right, grid[right.coords.x][right.coords.y]);
+                            adjacentNodes.add(right);
                         }
                         if(consecutive < min) return adjacentNodes;
                         if(up.coords.inBound(grid)) {
-                            adjacentNodes.put(up, grid[up.coords.x][up.coords.y]);
+                            adjacentNodes.add(up);
                         }
                         if(down.coords.inBound(grid)) {
-                            adjacentNodes.put(down, grid[down.coords.x][down.coords.y]);
+                            adjacentNodes.add(down);
                         }
                     }
                  } else {
@@ -206,33 +162,33 @@ public class Day17 {
                         // going up
                         up.setConsecutive(consecutive+1);
                         if(up.consecutive <= max && up.coords.inBound(grid)) {
-                            adjacentNodes.put(up, grid[up.coords.x][up.coords.y]);
+                            adjacentNodes.add(up);
                         }
                         if(consecutive < min) return adjacentNodes;
                         if(left.coords.inBound(grid)) {
-                            adjacentNodes.put(left, grid[left.coords.x][left.coords.y]);
+                            adjacentNodes.add(left);
                         }
                         if(right.coords.inBound(grid)) {
-                            adjacentNodes.put(right, grid[right.coords.x][right.coords.y]);
+                            adjacentNodes.add(right);
                         }               
                     } else {
                         // going down 0.o
                         down.setConsecutive(consecutive+1);
                         if(down.consecutive <= max && down.coords.inBound(grid)) {
-                            adjacentNodes.put(down, grid[down.coords.x][down.coords.y]);
+                            adjacentNodes.add(down);
                         }
                         if(consecutive < min) return adjacentNodes;
                         if(left.coords.inBound(grid)) {
-                            adjacentNodes.put(left, grid[left.coords.x][left.coords.y]);
+                            adjacentNodes.add(left);
                         }
                         if(right.coords.inBound(grid)) {
-                            adjacentNodes.put(right, grid[right.coords.x][right.coords.y]);
+                            adjacentNodes.add(right);
                         }  
                     }
                 }
             } else {
-                adjacentNodes.put(right, grid[right.coords.x][right.coords.y]);
-                adjacentNodes.put(down, grid[down.coords.x][down.coords.y]);
+                adjacentNodes.add(right);
+                adjacentNodes.add(down);
             }
 
             return adjacentNodes;
@@ -246,14 +202,6 @@ public class Day17 {
             this.distance = distance;
         }
 
-        public List<Node> getShortestPath() {
-            return shortestPath;
-        }
-        
-        public void setShortestPath(LinkedList<Node> shortestPath) {
-            this.shortestPath = shortestPath;
-        }
-        
         public void setConsecutive(int c) {
             this.consecutive  = c;
         }
@@ -281,6 +229,11 @@ public class Day17 {
                    node.consecutive == this.consecutive &&
                    node.previous.x == this.previous.x &&
                    node.previous.y == this.previous.y;
+        }
+
+        @Override
+        public int compareTo(Node o) {
+            return (this.getDistance() - o.getDistance());
         }
     }
     
