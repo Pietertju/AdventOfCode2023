@@ -5,6 +5,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 /**
@@ -12,6 +15,9 @@ import java.util.ArrayList;
  * @author Pieter
  */
 public class Day24 {
+    
+    static MathContext mc = new MathContext(32, RoundingMode.HALF_UP);
+    
     public static void main(String[] args) {
         long startTime = Benchmark.currentTime();
         File file = new File("res/day24/input.txt");
@@ -30,41 +36,43 @@ public class Day24 {
                 String[] location = split[0].split(",");
                 String[] velocities = split[1].split(",");
                 
-                double x = Double.parseDouble(location[0].trim());
-                double y = Double.parseDouble(location[1].trim());
-                double z = Double.parseDouble(location[2].trim());
+                BigDecimal x = new BigDecimal(location[0].trim());
+                BigDecimal y = new BigDecimal(location[1].trim());
+                BigDecimal z = new BigDecimal(location[2].trim());
+                Vector pos = new Vector(x, y, z);
                 
-                double vx = Double.parseDouble(velocities[0].trim());
-                double vy = Double.parseDouble(velocities[1].trim());
-                double vz = Double.parseDouble(velocities[2].trim());
+                BigDecimal vx = new BigDecimal(velocities[0].trim());
+                BigDecimal vy = new BigDecimal(velocities[1].trim());
+                BigDecimal vz = new BigDecimal(velocities[2].trim());
+                Vector vel = new Vector(vx, vy, vz);
                 
-                Hail hail = new Hail(x, y, z, vx, vy, vz);
+                Hail hail = new Hail(pos, vel);
                 hails.add(hail);
             }
         } catch(IOException e) {
             System.out.println(e.toString());
         }
         
-        double test1 = 200000000000000d;
-        double test2 = 400000000000000d;
+        BigDecimal test1 = BigDecimal.valueOf(200000000000000l);
+        BigDecimal test2 = BigDecimal.valueOf(400000000000000l);
         
         long parseEnd = Benchmark.currentTime();
         for(int i = 0; i < hails.size(); i++) {
             Hail hailA = hails.get(i);
             for(int j = i+1; j < hails.size(); j++) {
                 Hail hailB = hails.get(j);
-                if(hailA.ax == hailB.ax) continue;
-                double leftSide = hailA.ax - hailB.ax;
-                double rightSide = hailB.b - hailA.b;
-                double x = rightSide / leftSide;
+                if(hailA.ax.compareTo(hailB.ax) == 0) continue;
+                BigDecimal leftSide = hailA.ax.subtract(hailB.ax);
+                BigDecimal rightSide = hailB.b.subtract(hailA.b);
+                BigDecimal x = rightSide.divide(leftSide, mc);
 
-                double y = (hailA.ax * x) + hailA.b;
-                double stepsForA = (x - hailA.x)  / hailA.vx;
-                double stepsForB = (x -hailB.x) / hailB.vx;
+                BigDecimal y = (hailA.ax.multiply(x)).add(hailA.b);
+                BigDecimal stepsForA = (x.subtract(hailA.pos.x)).divide(hailA.vel.x, mc);
+                BigDecimal stepsForB = (x.subtract(hailB.pos.x)).divide(hailB.vel.x, mc);
                 
-                if(y >= test1 && y <= test2 &&
-                    x >= test1 && x <= test2) {
-                    if(stepsForA >= 0 && stepsForB >= 0) {
+                if(y.compareTo(test1) >= 0 && y.compareTo(test2) <= 0 &&
+                    x.compareTo(test1) >= 0 && x.compareTo(test2) <= 0) {
+                    if(stepsForA.compareTo(BigDecimal.ZERO) >= 0 && stepsForB.compareTo(BigDecimal.ZERO) >= 0) {
                         answerPart1++;
                     }
                 }
@@ -74,14 +82,78 @@ public class Day24 {
         long betweenTime = Benchmark.currentTime();
         
         //Part 2
-         for(int i = 0; i < hails.size(); i++) {
-            Hail hailA = hails.get(i);
-            for(int j = i+1; j < hails.size(); j++) {
-                Hail hailB = hails.get(j);
+        Hail firstHail = hails.get(0);
+        
+        Hail secondHail = hails.get(1);
+        Vector firstPlaneVector = subtractVectors(secondHail.pos, firstHail.pos);
+        Vector secondPlaneVector = subtractVectors(addVectors(secondHail.pos, subtractVectors(secondHail.vel, firstHail.vel)), firstHail.pos);
+        Vector normal1 = crossProduct(secondPlaneVector, firstPlaneVector);
+        
+        Hail thirdHail = hails.get(2);
+        Vector firstPlaneVector2 = subtractVectors(thirdHail.pos, firstHail.pos);
+        Vector secondPlaneVector2 = subtractVectors(addVectors(thirdHail.pos, subtractVectors(thirdHail.vel, firstHail.vel)), firstHail.pos);
+        Vector normal2 = crossProduct(secondPlaneVector2, firstPlaneVector2);
+        
+        Vector finalDir = crossProduct(normal1, normal2);
+        finalDir.toUnitVector();
+        
+        int index = 1;
+        Hail hailA = new Hail(hails.get(index).pos, subtractVectors(hails.get(index).vel, firstHail.vel)); 
+        Hail hailB = new Hail(firstHail.pos, finalDir);
+        
+        while(hailA.ax.compareTo(hailB.ax) == 0 || hailA.vel.x.compareTo(BigDecimal.ZERO) == 0 || hailA.vel.y.compareTo(BigDecimal.ZERO) == 0) {
+            index++;
+            hailA = new Hail(hails.get(index).pos, subtractVectors(hails.get(index).vel, firstHail.vel));
+        } 
+        
+        BigDecimal leftSide = (hailA.ax).subtract((hailB.ax));
+        BigDecimal rightSide = (hailB.b).subtract((hailA.b));
+        
+        BigDecimal x = rightSide.divide(leftSide, mc);
+        
+        BigDecimal stepsForCrossing = (x.subtract((hailA.pos.x))).divide((hailA.vel.x), mc);
                 
-            }
+        Vector startPos = new Vector(
+            (hailA.pos.x.add(hailA.vel.x.multiply(stepsForCrossing))).subtract(hailB.vel.x.multiply(stepsForCrossing)), 
+            (hailA.pos.y.add(hailA.vel.y.multiply(stepsForCrossing))).subtract(hailB.vel.y.multiply(stepsForCrossing)), 
+            (hailA.pos.z.add(hailA.vel.z.multiply(stepsForCrossing))).subtract(hailB.vel.z.multiply(stepsForCrossing))
+        );
+        
+        
+        hailB = new Hail(startPos, finalDir);
+        int i = index+1;
+        hailA = new Hail(hails.get(i).pos, subtractVectors(hails.get(i).vel, firstHail.vel));
+        while(hailA.ax.compareTo(hailB.ax) == 0 || hailA.vel.x.compareTo(BigDecimal.ZERO) == 0 || hailA.vel.y.compareTo(BigDecimal.ZERO) == 0) {
+            i++;
+            hailA = new Hail(hails.get(i).pos, subtractVectors(hails.get(i).vel, firstHail.vel));
         }
-        answerPart2 = 0;
+           
+        leftSide = (hailA.ax).subtract((hailB.ax));
+        rightSide = (hailB.b).subtract((hailA.b));
+        x = rightSide.divide(leftSide, mc);
+
+        BigDecimal stepsForA = x.subtract((hailA.pos.x)).divide((hailA.vel.x), mc);
+        BigDecimal stepsForB = x.subtract((hailB.pos.x)).divide((hailB.vel.x), mc);
+            
+        BigDecimal diffA = stepsForCrossing.subtract(stepsForA);
+        BigDecimal diffB = stepsForCrossing.subtract(stepsForB);
+        
+        BigDecimal times = diffA.divide(diffB, mc);
+                
+        finalDir.x = (finalDir.x).divide(times, mc);
+        finalDir.y = (finalDir.y).divide(times, mc);
+        finalDir.z = (finalDir.z).divide(times, mc);
+                        
+        finalDir = addVectors(finalDir, firstHail.vel);
+        hailA = hails.get(index);
+        
+        startPos = new Vector(
+            hailA.pos.x.add(hailA.vel.x.multiply(stepsForCrossing)).subtract(finalDir.x.multiply(stepsForCrossing)),
+            hailA.pos.y.add(hailA.vel.y.multiply(stepsForCrossing)).subtract(finalDir.y.multiply(stepsForCrossing)), 
+            hailA.pos.z.add(hailA.vel.z.multiply(stepsForCrossing)).subtract(finalDir.z.multiply(stepsForCrossing))
+        );
+                
+        answerPart2 = startPos.x.add(startPos.y).add(startPos.z).longValue();
         
         long endTime = Benchmark.currentTime();
         
@@ -97,28 +169,72 @@ public class Day24 {
     }
     
     public static class Hail {
-        double x;
-        double y;
-        double z;
+        Vector pos;
+        Vector vel;
         
-        double vx;
-        double vy;
-        double vz;
+        BigDecimal ax;
+        BigDecimal b; 
         
-        double ax;
-        double b;
+        public Hail(Vector pos, Vector vel) {
+            this.pos = pos;
+            this.vel = vel;
+            ax = this.vel.y.divide(this.vel.x, mc);
+            BigDecimal steps = this.pos.x.divide(this.vel.x, mc);
+            b = this.pos.y.subtract(this.vel.y.multiply(steps));
+         }
+    }
+    
+    public static class Vector {
         
-        public Hail(double x, double y, double z, double vx, double vy, double vz) {
+        BigDecimal x;
+        BigDecimal y;
+        BigDecimal z;
+        
+        public Vector(BigDecimal x, BigDecimal y, BigDecimal z) {
             this.x = x;
             this.y = y;
             this.z = z;
-            
-            this.vx = vx;
-            this.vy = vy;
-            this.vz = vz;
-            ax = this.vy / this.vx;
-            double steps = this.x / this.vx;
-            b = y - (vy * steps);
-         }
+        }
+        
+        void toUnitVector() {
+            BigDecimal div = gcd(this.x, gcd(this.y, this.z));
+
+            this.x = this.x.divide(div, mc);
+            this.y = this.y.divide(div, mc);
+            this.z = this.z.divide(div, mc);
+        }
+    }
+    
+    public static Vector subtractVectors(Vector a, Vector b) {
+        Vector c = new Vector(a.x.subtract(b.x), a.y.subtract(b.y), a.z.subtract(b.z));
+        return c;
+    }
+    
+    public static Vector addVectors(Vector a, Vector b) {
+        Vector c = new Vector(a.x.add(b.x), a.y.add(b.y), a.z.add(b.z));
+        return c;
+    }
+    
+    public static Vector crossProduct(Vector a, Vector b) {
+        Vector c = new Vector(
+            (a.y.multiply(b.z)).subtract(a.z.multiply(b.y)),
+            (a.z.multiply(b.x)).subtract(a.x.multiply(b.z)),
+            (a.x.multiply(b.y)).subtract(a.y.multiply(b.x))
+        );
+        return c;
+    }
+    
+    public static BigDecimal dotProduct(Vector a, Vector b) {
+        BigDecimal c = (a.x.multiply(b.x)).add(a.y.multiply(b.y)).add(a.z.multiply(b.z));
+        return c;
+    }
+    
+    static BigDecimal gcd(BigDecimal a, BigDecimal b) {
+
+        if (a.compareTo(BigDecimal.ZERO) == 0) {
+            return b;
+        }
+       
+        return gcd(b.remainder(a), a);
     }
 }
